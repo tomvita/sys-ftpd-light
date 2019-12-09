@@ -1430,14 +1430,11 @@ static void
 ftp_auth_check(ftp_session_t *session, const char *user, const char *pass) 
 {
 	char str_user[100];
-  long _user;
-  _user = ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), inifile); 
+  ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), inifile); 
   char str_pass[100];
-  long _pass;
-  _pass = ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), inifile); 
+  ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), inifile); 
   char str_anony[100];
-  long _anony;
-  _anony = ini_gets("Anonymous", "anonymous:", "dummy", str_anony, sizearray(str_anony), inifile); 
+  ini_gets("Anonymous", "anonymous:", "dummy", str_anony, sizearray(str_anony), inifile); 
   
   if (strcmp("1", str_anony) == 0)
   {      
@@ -2021,8 +2018,6 @@ applet_hook(AppletHookType type,
 
 void ftp_pre_init(void)
 {  
-  int rc;
-
   start_time = time(NULL);
 
 
@@ -2069,8 +2064,7 @@ int ftp_init(void)
 
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   char str_port[100];
-  long _port;
-  _port = ini_gets("Port", "port:", "dummy", str_port, sizearray(str_port), inifile); 
+  ini_gets("Port", "port:", "dummy", str_port, sizearray(str_port), inifile); 
   LISTEN_PORT = atoi (str_port);
   serv_addr.sin_port = htons(LISTEN_PORT);
 
