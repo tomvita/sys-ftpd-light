@@ -40,7 +40,7 @@ void __libnx_initheap(void)
 void __appInit(void)
 {
     Result rc;
-    svcSleepThread(10000000000L);
+    svcSleepThread(5e+8);
     rc = smInitialize();
     if (R_FAILED(rc))
         fatalThrow(rc);
@@ -87,7 +87,7 @@ static loop_status_t loop(loop_status_t (*callback)(void))
 
     while (appletMainLoop())
     {
-        svcSleepThread(10000000L);
+        svcSleepThread(1e+7);
         status = callback();
         console_render();
         if (status != LOOP_CONTINUE)
@@ -102,7 +102,7 @@ void inputPoller()
 {
     while (appletMainLoop())
     {
-        svcSleepThread(1e+8L);
+        svcSleepThread(1e+8);
         hidScanInput();
         u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
         u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     {
         while (isPaused())
         {
-            svcSleepThread(1000000000L);
+            svcSleepThread(1e+9);
         }
 
         /* initialize ftp subsystem */
