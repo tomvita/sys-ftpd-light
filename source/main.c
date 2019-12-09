@@ -132,7 +132,7 @@ int main(int argc, char **argv)
     mp3MutInit();
     pauseInit();
     Thread pauseThread;
-    Result rc = threadCreate(&pauseThread, inputPoller, NULL, 0x4000, 49, 3);
+    Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x4000, 49, 3);
     if (R_FAILED(rc))
         fatalLater(rc);
     rc = threadStart(&pauseThread);
