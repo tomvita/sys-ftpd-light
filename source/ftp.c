@@ -2015,22 +2015,23 @@ applet_hook(AppletHookType type,
 #endif
 
 void ftp_pre_init(void)
-{  
+{
   start_time = time(NULL);
 
 
   static const SocketInitConfig socketInitConfig = {
       .bsdsockets_version = 1,
 
-      .tcp_tx_buf_size = 8 * SOCK_BUFFERSIZE,
-      .tcp_rx_buf_size = 8 * SOCK_BUFFERSIZE,
-      .tcp_tx_buf_max_size = 16 * SOCK_BUFFERSIZE,
-      .tcp_rx_buf_max_size = 16 * SOCK_BUFFERSIZE,
+      .tcp_tx_buf_size = 0x800,
+      .tcp_rx_buf_size = 0x1000,
+      .tcp_tx_buf_max_size = 0x4000,
+      .tcp_rx_buf_max_size = 0x4000,
 
-      .udp_tx_buf_size = 0x2400,
-      .udp_rx_buf_size = 0xA500,
+      //We don't use UDP, set all UDP buffers to 0
+      .udp_tx_buf_size = 0,   
+      .udp_rx_buf_size = 0,
 
-      .sb_efficiency = 8,
+      .sb_efficiency = 5,
   };
 
   Result rc = socketInitialize(&socketInitConfig);

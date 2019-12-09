@@ -18,7 +18,7 @@
 #include "util.h"
 
 #define TITLE_ID 0x420000000000000E
-#define HEAP_SIZE 0x000540000
+#define HEAP_SIZE 0x000054000
 
 // we aren't an applet
 u32 __nx_applet_type = AppletType_None;
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 
     pauseInit();
     Thread pauseThread;
-    Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x4000, 49, 3);
+    Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x4000, 0x3B, -2);
     if (R_FAILED(rc))
         fatalThrow(rc);
     rc = threadStart(&pauseThread);
