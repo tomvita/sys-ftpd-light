@@ -42,10 +42,10 @@
 
 #define POLL_UNKNOWN (~(POLLIN | POLLPRI | POLLOUT))
 
-#define XFER_BUFFERSIZE 16384
-#define SOCK_BUFFERSIZE 16384
-#define FILE_BUFFERSIZE 32768
-#define CMD_BUFFERSIZE 4096
+#define XFER_BUFFERSIZE 0x4000
+#define SOCK_BUFFERSIZE 0x4000
+#define FILE_BUFFERSIZE 0x8000
+#define CMD_BUFFERSIZE 0x1000
 
 int LISTEN_PORT;
 //#define LISTEN_PORT 5000
@@ -2023,15 +2023,15 @@ void ftp_pre_init(void)
       .bsdsockets_version = 1,
 
       .tcp_tx_buf_size = 0x800,
-      .tcp_rx_buf_size = 0x1000,
-      .tcp_tx_buf_max_size = 0x4000,
-      .tcp_rx_buf_max_size = 0x4000,
+      .tcp_rx_buf_size = 0x800,
+      .tcp_tx_buf_max_size = 0x16000,
+      .tcp_rx_buf_max_size = 0x16000,
 
       //We don't use UDP, set all UDP buffers to 0
       .udp_tx_buf_size = 0,   
       .udp_rx_buf_size = 0,
 
-      .sb_efficiency = 5,
+      .sb_efficiency = 1,
   };
 
   Result rc = socketInitialize(&socketInitConfig);
