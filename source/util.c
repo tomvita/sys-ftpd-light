@@ -6,22 +6,6 @@
 
 #include <switch.h>
 
-
-void fatalLater(Result err)
-{
-    Handle srv;
-
-    while (R_FAILED(smGetServiceOriginal(&srv, smEncodeName("fatal:u"))))
-    {
-        // wait one sec and retry
-        svcSleepThread(1000000000L);
-    }
-
-    // fatal is here time, fatal like a boss
-    fatalThrow(err);
-}
-
-
 bool paused = false;
 static Mutex pausedMutex;
 void pauseInit() {

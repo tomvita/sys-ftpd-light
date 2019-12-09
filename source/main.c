@@ -43,22 +43,22 @@ void __appInit(void)
     svcSleepThread(10000000000L);
     rc = smInitialize();
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = fsInitialize();
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = fsdevMountSdmc();
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = timeInitialize();
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = hidInitialize();
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = hidsysInitialize();
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = setsysInitialize();
     if (R_SUCCEEDED(rc))
     {
@@ -132,10 +132,10 @@ int main(int argc, char **argv)
     Thread pauseThread;
     Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x4000, 49, 3);
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
     rc = threadStart(&pauseThread);
     if (R_FAILED(rc))
-        fatalLater(rc);
+        fatalThrow(rc);
 
     loop_status_t status = LOOP_RESTART;
 

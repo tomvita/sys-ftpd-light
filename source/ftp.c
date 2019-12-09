@@ -2033,10 +2033,10 @@ void ftp_pre_init(void)
       .sb_efficiency = 8,
   };
 
-  Result ret = socketInitialize(&socketInitConfig);
-  if (ret != 0)
+  Result rc = socketInitialize(&socketInitConfig);
+  if (R_FAILED(rc))
   {
-    fatalLater(ret);
+    fatalThrow(rc);
   }
 
   /* register applet hook */
