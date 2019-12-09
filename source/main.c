@@ -127,7 +127,6 @@ int main(int argc, char **argv)
         unlink("/config/sys-ftpd/logs/ftpd.log");
     }
 
-    mp3MutInit();
     pauseInit();
     Thread pauseThread;
     Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x4000, 49, 3);
