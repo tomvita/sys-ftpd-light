@@ -1,3 +1,4 @@
+#include "led.h"
 #include <string.h>
 #include <switch.h>
 
@@ -30,7 +31,10 @@ void flash_led_connect()
         fatalThrow(rc);
 
     for (int i = 0; i < total_entries; i++)
+    {
         hidsysSetNotificationLedPattern(&pattern, uniquePadIds[i]);
+        hidsysSetNotificationLedPatternWithTimeout(&pattern, uniquePadIds[i], LED_TIMEOUT);
+    }
 }
 
 void flash_led_disconnect()
