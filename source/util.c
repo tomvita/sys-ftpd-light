@@ -6,7 +6,6 @@
 
 #include <switch.h>
 
-#include "mp3.h"
 
 void fatalLater(Result err)
 {
@@ -50,10 +49,8 @@ void setPaused(bool newPaused) {
     if(paused) {
         FILE *should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "w");
         fclose(should_pause_file);
-        playMp3("/config/sys-ftpd/pauseon.mp3");
     } else {
         unlink("/config/sys-ftpd/ftpd_paused");
-        playMp3("/config/sys-ftpd/pauseoff.mp3");
     }
     mutexUnlock(&pausedMutex);
 }
