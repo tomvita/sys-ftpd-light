@@ -17,8 +17,6 @@
 
 #include "util.h"
 
-#include "mp3.h"
-
 #define TITLE_ID 0x420000000000000E
 #define HEAP_SIZE 0x000540000
 
