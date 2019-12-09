@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 
     pauseInit();
     Thread pauseThread;
-    Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x4000, 0x3B, -2);
+    Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x300, 0x3B, -2);
     if (R_FAILED(rc))
         fatalThrow(rc);
     rc = threadStart(&pauseThread);
