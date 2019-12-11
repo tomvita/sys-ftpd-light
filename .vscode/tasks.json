@@ -26,5 +26,26 @@
                 "isDefault": true
             }
         },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "promptOnClose": true,
+            "command": "make clean -j8",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }
+        },
     ]
 }
