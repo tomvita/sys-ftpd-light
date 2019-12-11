@@ -2024,8 +2024,8 @@ void ftp_pre_init(void)
 
       .tcp_tx_buf_size = 0x800,
       .tcp_rx_buf_size = 0x800,
-      .tcp_tx_buf_max_size = 0x16000,
-      .tcp_rx_buf_max_size = 0x16000,
+      .tcp_tx_buf_max_size = 0x25000,
+      .tcp_rx_buf_max_size = 0x25000,
 
       //We don't use UDP, set all UDP buffers to 0
       .udp_tx_buf_size = 0,   
