@@ -9,7 +9,7 @@ void flash_led_connect()
     HidsysNotificationLedPattern pattern;
     memset(&pattern, 0, sizeof(pattern));
 
-            // Setup Breathing effect pattern data.
+    // Setup Breathing effect pattern data.
     pattern.baseMiniCycleDuration = 0x8;             // 100ms.
     pattern.totalMiniCycles = 0x2;                   // 3 mini cycles. Last one 12.5ms.
     pattern.totalFullCycles = 0x0;                   // Repeat forever.
