@@ -43,46 +43,44 @@ void __libnx_initheap(void)
 
 void __appInit(void)
 {
-    Result rc;
-    svcSleepThread(5e+8);
-    rc = smInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = fsInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = fsdevMountSdmc();
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = timeInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = hidInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = hidsysInitialize();
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = setsysInitialize();
-    if (R_SUCCEEDED(rc))
-    {
-        SetSysFirmwareVersion fw;
-        rc = setsysGetFirmwareVersion(&fw);
-        if (R_SUCCEEDED(rc))
-            hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
-        setsysExit();
-    }
+    R_ASSERT(smInitialize());
+    R_ASSERT(fsInitialize());
+    R_ASSERT(fsdevMountSdmc());
+    R_ASSERT(timeInitialize());
+    R_ASSERT(hidInitialize());
+    R_ASSERT(hidsysInitialize());
+    R_ASSERT(setsysInitialize());
+    SetSysFirmwareVersion fw;
+    if (R_SUCCEEDED(setsysGetFirmwareVersion(&fw)))
+        hosversionSet(MAKEHOSVERSION(fw.major, fw.minor, fw.micro));
+    setsysExit();
+
+    static const SocketInitConfig socketInitConfig = {
+        .bsdsockets_version = 1,
+
+        .tcp_tx_buf_size = 0x800,
+        .tcp_rx_buf_size = 0x800,
+        .tcp_tx_buf_max_size = 0x25000,
+        .tcp_rx_buf_max_size = 0x25000,
+
+        //We don't use UDP, set all UDP buffers to 0
+        .udp_tx_buf_size = 0,   
+        .udp_rx_buf_size = 0,
+
+        .sb_efficiency = 1,
+    };
+    R_ASSERT(socketInitialize(&socketInitConfig));
+    smExit();
 }
 
 void __appExit(void)
 {
+    socketExit();
+    hidsysExit();
+    hidExit();
+    timeExit();
     fsdevUnmountAll();
     fsExit();
-    smExit();
-    audoutExit();
-    timeExit();
-    hidExit();
-    hidsysExit();
 }
 
 static loop_status_t loop(loop_status_t (*callback)(void))
