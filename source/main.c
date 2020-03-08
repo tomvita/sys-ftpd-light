@@ -17,8 +17,12 @@
 
 #include "util.h"
 
+#include "minIni.h"
+
 #define TITLE_ID 0x420000000000000E
 #define HEAP_SIZE 0xA7000
+
+#define CONFIGPATH "/config/sys-ftpd/config.ini"
 
 // we aren't an applet
 u32 __nx_applet_type = AppletType_None;
@@ -85,7 +89,7 @@ static loop_status_t loop(loop_status_t (*callback)(void))
 {
     loop_status_t status = LOOP_CONTINUE;
 
-    while (appletMainLoop())
+    while (true)
     {
         svcSleepThread(1e+7);
         status = callback();
@@ -98,19 +102,6 @@ static loop_status_t loop(loop_status_t (*callback)(void))
     return LOOP_EXIT;
 }
 
-void inputPoller()
-{
-    while (appletMainLoop())
-    {
-        svcSleepThread(1e+8);
-        hidScanInput();
-        u64 kDown = hidKeysDown(CONTROLLER_P1_AUTO);
-        u64 kHeld = hidKeysHeld(CONTROLLER_P1_AUTO);
-
-        if ((kDown & KEY_PLUS || kDown & KEY_MINUS || kDown & KEY_X) && (kHeld & KEY_PLUS && kHeld & KEY_MINUS && kHeld & KEY_X))
-            setPaused(!isPaused());
-    }
-}
 
 int main(int argc, char **argv)
 {
@@ -127,14 +118,16 @@ int main(int argc, char **argv)
         unlink("/config/sys-ftpd/logs/ftpd.log");
     }
 
-    pauseInit();
-    Thread pauseThread;
-    Result rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x300, 0x3B, -2);
-    if (R_FAILED(rc))
-        fatalThrow(rc);
-    rc = threadStart(&pauseThread);
-    if (R_FAILED(rc))
-        fatalThrow(rc);
+    char buffer[100];
+    ini_gets("Pause", "disabled:", "0", buffer, 100, CONFIGPATH);
+
+    //Checks if pausing is disabled in the config file, in which case it skips the entire pause initialization
+    if (strncmp(buffer, "1", 4) != 0)
+    {
+        Result rc = pauseInit();
+        if (R_FAILED(rc))
+            fatalThrow(rc);
+    }
 
     loop_status_t status = LOOP_RESTART;
 
@@ -159,6 +152,8 @@ int main(int argc, char **argv)
             status = LOOP_EXIT;
     }
     ftp_post_exit();
+
+    pauseExit();
 
     return 0;
 }

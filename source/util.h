@@ -1,5 +1,7 @@
+#pragma once
 #include <switch.h>
 
-void pauseInit();
+Result pauseInit();
+void pauseExit();
 bool isPaused();
 void setPaused(bool newPaused);
