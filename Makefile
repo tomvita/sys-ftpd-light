@@ -117,11 +117,18 @@ all: $(BUILD)
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	rm -rf out
+	mkdir -p out/atmosphere/contents/420000000000000E/flags
+	mkdir -p out/config/$(TARGET)
+	touch out/atmosphere/contents/420000000000000E/flags/boot2.flag
+	cp $(TARGET).nsp out/atmosphere/contents/420000000000000E/exefs.nsp
+	cp -r sd_card/. out/
+	@echo [DONE] $(TARGET) compiled successfully. All files have been placed in out/
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).nsp $(TARGET).npdm $(TARGET).nso $(TARGET).elf
+	@rm -fr $(BUILD) $(TARGET).nsp $(TARGET).npdm $(TARGET).nso $(TARGET).elf out
 
 #---------------------------------------------------------------------------------
 else

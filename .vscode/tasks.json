@@ -5,7 +5,7 @@
             "label": "Build",
             "type": "shell",
             "promptOnClose": true,
-            "command": "make -j8",
+            "command": "make -j4",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
@@ -30,7 +30,7 @@
             "label": "Clean",
             "type": "shell",
             "promptOnClose": true,
-            "command": "make clean -j8",
+            "command": "make clean",
             "presentation": {
                 "reveal": "always",
                 "panel": "new"
