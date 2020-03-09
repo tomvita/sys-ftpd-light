@@ -57,9 +57,6 @@ int LISTEN_PORT;
 
 #include <assert.h>
 #include "minIni.h"
-#define sizearray(a)  (sizeof(a) / sizeof((a)[0]))
-
-const char inifile[] = "/config/sys-ftpd/config.ini";
 
 int Callback(const char *section, const char *key, const char *value, void *userdata)
 {
@@ -1429,11 +1426,11 @@ static void
 ftp_auth_check(ftp_session_t *session, const char *user, const char *pass) 
 {
 	char str_user[100];
-  ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), inifile); 
+  ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), CONFIGPATH); 
   char str_pass[100];
-  ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), inifile); 
+  ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), CONFIGPATH); 
   char str_anony[100];
-  ini_gets("Anonymous", "anonymous:", "dummy", str_anony, sizearray(str_anony), inifile); 
+  ini_gets("Anonymous", "anonymous:", "dummy", str_anony, sizearray(str_anony), CONFIGPATH); 
   
   if (strcmp("1", str_anony) == 0)
   {      
@@ -2041,7 +2038,7 @@ int ftp_init(void)
 
   serv_addr.sin_addr.s_addr = INADDR_ANY;
   char str_port[100];
-  ini_gets("Port", "port:", "dummy", str_port, sizearray(str_port), inifile); 
+  ini_gets("Port", "port:", "dummy", str_port, sizearray(str_port), CONFIGPATH); 
   LISTEN_PORT = atoi (str_port);
   serv_addr.sin_port = htons(LISTEN_PORT);
 

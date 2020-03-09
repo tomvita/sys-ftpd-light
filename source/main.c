@@ -19,10 +19,7 @@
 
 #include "minIni.h"
 
-#define TITLE_ID 0x420000000000000E
 #define HEAP_SIZE 0xA7000
-
-#define CONFIGPATH "/config/sys-ftpd/config.ini"
 
 // we aren't an applet
 u32 __nx_applet_type = AppletType_None;
