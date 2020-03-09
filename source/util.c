@@ -91,12 +91,12 @@ Result pauseInit() {
     {
         char buffer[128];
         ini_gets("Pause", "keycombo:", "PLUS+MINUS+X", buffer, 128, CONFIGPATH);
-        char* token = strtok(buffer, "+");
+        char* token = strtok(buffer, "+ ");
         int i = 0;
         while (token != NULL && i != sizearray(comboKeys))
         {
             comboKeys[i++] = GetKey(token);
-            token = strtok(NULL, "+");
+            token = strtok(NULL, "+ ");
         };
     }
 
