@@ -10,17 +10,17 @@ void flash_led_connect()
     memset(&pattern, 0, sizeof(pattern));
 
     // Setup Breathing effect pattern data.
-    pattern.baseMiniCycleDuration = 0x8;             // 100ms.
-    pattern.totalMiniCycles = 0x2;                   // 3 mini cycles. Last one 12.5ms.
-    pattern.totalFullCycles = 0x0;                   // Repeat forever.
-    pattern.startIntensity = 0x2;                    // 13%.
+    pattern.baseMiniCycleDuration = 0x8; // 100ms.
+    pattern.totalMiniCycles = 0x2;       // 3 mini cycles. Last one 12.5ms.
+    pattern.totalFullCycles = 0x0;       // Repeat forever.
+    pattern.startIntensity = 0x2;        // 13%.
 
-    pattern.miniCycles[0].ledIntensity = 0xF;        // 100%.
-    pattern.miniCycles[0].transitionSteps = 0xF;     // 15 steps. Transition time 1.5s.
-    pattern.miniCycles[0].finalStepDuration = 0x0;   // Forced 12.5ms.
-    pattern.miniCycles[1].ledIntensity = 0x2;        // 13%.
-    pattern.miniCycles[1].transitionSteps = 0xF;     // 15 steps. Transition time 1.5s.
-    pattern.miniCycles[1].finalStepDuration = 0x0;   // Forced 12.5ms. 
+    pattern.miniCycles[0].ledIntensity = 0xF;      // 100%.
+    pattern.miniCycles[0].transitionSteps = 0xF;   // 15 steps. Transition time 1.5s.
+    pattern.miniCycles[0].finalStepDuration = 0x0; // Forced 12.5ms.
+    pattern.miniCycles[1].ledIntensity = 0x2;      // 13%.
+    pattern.miniCycles[1].transitionSteps = 0xF;   // 15 steps. Transition time 1.5s.
+    pattern.miniCycles[1].finalStepDuration = 0x0; // Forced 12.5ms.
 
     u64 uniquePadIds[5] = {0};
 

@@ -1,14 +1,14 @@
-#include <string.h>
-#include <stdio.h>
 #include <dirent.h>
+#include <stdio.h>
+#include <string.h>
 
+#include "console.h"
+#include "ftp.h"
 #include <errno.h>
 #include <malloc.h>
 #include <stdarg.h>
-#include <unistd.h>
-#include "console.h"
-#include "ftp.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 // only for mkdir, used when creating the "logs" directory
 #include <sys/stat.h>
@@ -30,8 +30,8 @@ char fake_heap[HEAP_SIZE];
 // we override libnx internals to do a minimal init
 void __libnx_initheap(void)
 {
-    extern char *fake_heap_start;
-    extern char *fake_heap_end;
+    extern char* fake_heap_start;
+    extern char* fake_heap_end;
 
     // setup newlib fake heap
     fake_heap_start = fake_heap;
@@ -61,7 +61,7 @@ void __appInit(void)
         .tcp_rx_buf_max_size = 0x25000,
 
         //We don't use UDP, set all UDP buffers to 0
-        .udp_tx_buf_size = 0,   
+        .udp_tx_buf_size = 0,
         .udp_rx_buf_size = 0,
 
         .sb_efficiency = 1,
@@ -97,13 +97,12 @@ static loop_status_t loop(loop_status_t (*callback)(void))
     return LOOP_EXIT;
 }
 
-
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
     (void)argc;
     (void)argv;
 
-    FILE *should_log_file = fopen("/config/sys-ftpd/logs/ftpd_log_enabled", "r");
+    FILE* should_log_file = fopen("/config/sys-ftpd/logs/ftpd_log_enabled", "r");
     if (should_log_file != NULL)
     {
         should_log = true;

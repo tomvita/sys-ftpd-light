@@ -1,12 +1,12 @@
 #include "util.h"
-#include <string.h>
-#include <stdio.h>
 #include <malloc.h>
 #include <math.h>
+#include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
-#include <switch.h>
 #include "minIni.h"
+#include <switch.h>
 
 static bool inputThreadRunning = true;
 static bool paused = false;
@@ -24,7 +24,7 @@ void inputPoller()
             kHeld |= hidKeysHeld(controller);
 
         u64 keyCombo = 0;
-        for (u8 i=0; i != sizearray(comboKeys); ++i)
+        for (u8 i = 0; i != sizearray(comboKeys); ++i)
             keyCombo |= comboKeys[i];
 
         static bool keyComboPressed = false;
@@ -64,9 +64,9 @@ const char* buttons[] = {
     "DDOWN",
 };
 
-HidControllerKeys GetKey(const char *text)
+HidControllerKeys GetKey(const char* text)
 {
-    for (u8 i=0; i != sizearray(buttons); ++i)
+    for (u8 i = 0; i != sizearray(buttons); ++i)
     {
         if (strcmp(text, buttons[i]) == 0)
         {
@@ -76,14 +76,14 @@ HidControllerKeys GetKey(const char *text)
     return 0;
 }
 
-
-
-Result pauseInit() {
+Result pauseInit()
+{
     Result rc;
     mutexLock(&pausedMutex);
 
-    FILE *should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "r");
-    if (should_pause_file != NULL) {
+    FILE* should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "r");
+    if (should_pause_file != NULL)
+    {
         paused = true;
         fclose(should_pause_file);
     }
@@ -110,7 +110,7 @@ Result pauseInit() {
     if (R_FAILED(rc))
         goto exit;
 
-exit: 
+exit:
     mutexUnlock(&pausedMutex);
     return rc;
 }
@@ -122,21 +122,25 @@ void pauseExit()
     threadClose(&pauseThread);
 }
 
-
-bool isPaused() {
+bool isPaused()
+{
     mutexLock(&pausedMutex);
     bool ret = paused;
     mutexUnlock(&pausedMutex);
     return ret;
 }
 
-void setPaused(bool newPaused) {
+void setPaused(bool newPaused)
+{
     mutexLock(&pausedMutex);
     paused = newPaused;
-    if(paused) {
-        FILE *should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "w");
+    if (paused)
+    {
+        FILE* should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "w");
         fclose(should_pause_file);
-    } else {
+    }
+    else
+    {
         unlink("/config/sys-ftpd/ftpd_paused");
     }
     mutexUnlock(&pausedMutex);
