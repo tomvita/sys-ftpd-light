@@ -181,6 +181,7 @@ struct ftp_session_t
   DIR *dp;           /*! persistent open directory pointer between callbacks */
   bool user_ok;
   bool pass_ok;
+  bool led;
 };
 
 /*! ftp command descriptor */
@@ -1257,6 +1258,7 @@ ftp_session_new(int listen_fd)
   session->state = COMMAND_STATE;
   session->user_ok    = false;
   session->pass_ok    = false;
+  session->led        = true;
 
   /* link to the sessions list */
   if (sessions == NULL)
@@ -1431,12 +1433,20 @@ ftp_auth_check(ftp_session_t *session, const char *user, const char *pass)
   ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), CONFIGPATH); 
   char str_anony[100];
   ini_gets("Anonymous", "anonymous:", "dummy", str_anony, sizearray(str_anony), CONFIGPATH); 
+  char str_led[100];
+  ini_gets("LED", "led:", "1", str_led, sizearray(str_led), CONFIGPATH);
+
+  session->led = (strcmp("1", str_led) == 0);
   
   if (strcmp("1", str_anony) == 0)
   {      
         session->user_ok = false;
         session->pass_ok = false;
         ftp_send_response(session, 230, "OK, Huh Anonymous is that you ???\r\n");
+        if (session->led)
+        {
+            flash_led_connect();
+        }
 		return;
   }
   
@@ -1474,6 +1484,10 @@ ftp_auth_check(ftp_session_t *session, const char *user, const char *pass)
   if(ftp_auth_oncommand(session, NULL)) 
   {
     ftp_send_response(session, 230, "OK\r\n");
+    if (session->led)
+    {
+        flash_led_connect();
+    }
 	return;
   } 
   else 
@@ -1842,7 +1856,11 @@ ftp_session_poll(ftp_session_t *session)
 
   /* disconnected from peer; destroy it and return next session */
   debug_print("disconnected from peer\n");
-  flash_led_disconnect();
+    if (session->led)
+    {
+        flash_led_disconnect();
+    }
+
   return ftp_session_destroy(session);
 }
 
@@ -2145,7 +2163,6 @@ ftp_loop(void)
       {
         return LOOP_RESTART;
       }
-      flash_led_connect();
     }
     else
     {
