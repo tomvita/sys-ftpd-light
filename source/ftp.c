@@ -3022,8 +3022,13 @@ FTP_DECLARE(CWD)
         return;
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+
     /* copy the path into the cwd */
     strncpy(session->cwd, session->buffer, sizeof(session->cwd));
+
+#pragma GCC diagnostic pop
 
     ftp_send_response(session, 200, "OK\r\n");
 }
