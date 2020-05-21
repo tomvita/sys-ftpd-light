@@ -3576,7 +3576,7 @@ FTP_DECLARE(PASV)
             *p = ',';
     }
 
-    ftp_send_response(session, 227, "%s\r\n", buffer);
+    ftp_send_response(session, 227, "Entering Passive Mode (%s)\r\n", buffer);
 }
 
 /*! @fn static void PORT(ftp_session_t *session, const char *args)
