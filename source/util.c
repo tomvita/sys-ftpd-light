@@ -1,4 +1,5 @@
 #include "util.h"
+#include "led.h"
 #include <malloc.h>
 #include <math.h>
 #include <stdio.h>
@@ -138,10 +139,12 @@ void setPaused(bool newPaused)
     {
         FILE* should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "w");
         fclose(should_pause_file);
+        flash_led_pause();
     }
     else
     {
         unlink("/config/sys-ftpd/ftpd_paused");
+        flash_led_unpause();
     }
     mutexUnlock(&pausedMutex);
 }

@@ -4,37 +4,82 @@
 
 #include "util.h"
 
-void flash_led_connect()
+// Breathing effect LED pattern
+static const HidsysNotificationLedPattern breathing_pattern = {
+    .baseMiniCycleDuration = 0x8, // 100ms.
+    .totalMiniCycles = 0x2,       // 3 mini cycles. Last one 12.5ms.
+    .totalFullCycles = 0x5,       // 5 full cycles.
+    .startIntensity = 0x2,        // 13%.
+    .miniCycles = {
+        // First cycle
+        {
+            .ledIntensity = 0xF,      // 100%.
+            .transitionSteps = 0xF,   // 15 steps. Transition time 1.5s.
+            .finalStepDuration = 0x0, // 12.5ms.
+        },
+        // Second cycle
+        {
+            .ledIntensity = 0x2,      // 13%.
+            .transitionSteps = 0xF,   // 15 steps. Transition time 1.5s.
+            .finalStepDuration = 0x0, // 12.5ms.
+        },
+    },
+};
+
+// Double click LED pattern.
+static const HidsysNotificationLedPattern double_click_pattern = {
+    .baseMiniCycleDuration = 0x6, // 75ms.
+    .totalMiniCycles = 0x2,       // 3 mini cycles. Last one 12.5ms.
+    .totalFullCycles = 0x1,       // 1 full cycle.
+    .startIntensity = 0xF,        // 100%.
+    .miniCycles = {
+        // First cycle
+        {
+            .ledIntensity = 0x0,      // 0%.
+            .transitionSteps = 0x0,   // Instant transition time.
+            .finalStepDuration = 0x0, // 12.5ms.
+        },
+        // Second cycle
+        {
+            .ledIntensity = 0xF,      // 100%.
+            .transitionSteps = 0x0,   // Instant transition time.
+            .finalStepDuration = 0x1, // 75ms.
+        },
+    },
+};
+
+// Single click LED pattern.
+static const HidsysNotificationLedPattern single_click_pattern = {
+    .baseMiniCycleDuration = 0x8, // 100ms.
+    .totalMiniCycles = 0x1,       // 2 mini cycles. Last one 12.5ms.
+    .totalFullCycles = 0x1,       // 1 full cycle.
+    .startIntensity = 0xF,        // 100%.
+    .miniCycles = {
+        // First cycle
+        {
+            .ledIntensity = 0x0,      // 0%.
+            .transitionSteps = 0x5,   // 3 steps. Transition time 0.5s.
+            .finalStepDuration = 0x0, // 12.5ms.
+        },
+    },
+};
+
+static void send_led_pattern(const HidsysNotificationLedPattern* pattern)
 {
-    HidsysNotificationLedPattern pattern;
-    memset(&pattern, 0, sizeof(pattern));
+    s32 total_entries;
+    u64 uniquePadIds[2];
 
-    // Setup Breathing effect pattern data.
-    pattern.baseMiniCycleDuration = 0x8; // 100ms.
-    pattern.totalMiniCycles = 0x2;       // 3 mini cycles. Last one 12.5ms.
-    pattern.totalFullCycles = 0x0;       // Repeat forever.
-    pattern.startIntensity = 0x2;        // 13%.
-
-    pattern.miniCycles[0].ledIntensity = 0xF;      // 100%.
-    pattern.miniCycles[0].transitionSteps = 0xF;   // 15 steps. Transition time 1.5s.
-    pattern.miniCycles[0].finalStepDuration = 0x0; // Forced 12.5ms.
-    pattern.miniCycles[1].ledIntensity = 0x2;      // 13%.
-    pattern.miniCycles[1].transitionSteps = 0xF;   // 15 steps. Transition time 1.5s.
-    pattern.miniCycles[1].finalStepDuration = 0x0; // Forced 12.5ms.
-
-    u64 uniquePadIds[5] = {0};
-
-    s32 total_entries = 0;
-
-    Result rc = hidsysGetUniquePadIds(uniquePadIds, 5, &total_entries);
+    Result rc = hidsysGetUniquePadsFromNpad(hidGetHandheldMode() ? CONTROLLER_HANDHELD : CONTROLLER_PLAYER_1, uniquePadIds, 2, &total_entries);
     if (R_FAILED(rc) && rc != MAKERESULT(Module_Libnx, LibnxError_IncompatSysVer))
         fatalThrow(rc);
 
     for (int i = 0; i < total_entries; i++)
-    {
-        hidsysSetNotificationLedPattern(&pattern, uniquePadIds[i]);
-        hidsysSetNotificationLedPatternWithTimeout(&pattern, uniquePadIds[i], LED_TIMEOUT);
-    }
+        hidsysSetNotificationLedPattern(pattern, uniquePadIds[i]);
+}
+
+void flash_led_connect()
+{
+    send_led_pattern(&breathing_pattern);
 }
 
 void flash_led_disconnect()
@@ -42,15 +87,15 @@ void flash_led_disconnect()
     HidsysNotificationLedPattern pattern;
     memset(&pattern, 0, sizeof(pattern));
 
-    u64 uniquePadIds[2];
-    memset(uniquePadIds, 0, sizeof(uniquePadIds));
+    send_led_pattern(&pattern);
+}
 
-    s32 total_entries = 0;
+void flash_led_pause()
+{
+    send_led_pattern(&double_click_pattern);
+}
 
-    Result rc = hidsysGetUniquePadsFromNpad(hidGetHandheldMode() ? CONTROLLER_HANDHELD : CONTROLLER_PLAYER_1, uniquePadIds, 2, &total_entries);
-    if (R_FAILED(rc) && rc != MAKERESULT(Module_Libnx, LibnxError_IncompatSysVer))
-        fatalThrow(rc);
-
-    for (int i = 0; i < total_entries; i++)
-        hidsysSetNotificationLedPattern(&pattern, uniquePadIds[i]);
+void flash_led_unpause()
+{
+    send_led_pattern(&single_click_pattern);
 }
