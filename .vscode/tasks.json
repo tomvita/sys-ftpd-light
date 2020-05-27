@@ -5,7 +5,7 @@
             "label": "Build",
             "type": "shell",
             "promptOnClose": true,
-            "command": "make -j4",
+            "command": "make -j3",
             "presentation": {
                 "reveal": "always",
                 "panel": "shared"
