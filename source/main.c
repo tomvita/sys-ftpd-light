@@ -21,8 +21,10 @@
 
 #define HEAP_SIZE 0xA7000
 
-// we aren't an applet
+// We aren't an applet.
 u32 __nx_applet_type = AppletType_None;
+// We're a sysmodule and don't need multithreaded FS. Use 1 session instead of default 3.
+u32 __nx_fs_num_sessions = 1;
 
 // setup a fake heap
 char fake_heap[HEAP_SIZE];
