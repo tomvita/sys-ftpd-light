@@ -65,8 +65,6 @@ int Callback(const char* section, const char* key, const char* value, void* user
     return 1;
 }
 
-typedef struct ftp_session_t ftp_session_t;
-
 #define FTP_DECLARE(x) static void x(ftp_session_t* session, const char* args)
 FTP_DECLARE(ABOR);
 FTP_DECLARE(ALLO);
@@ -1262,7 +1260,7 @@ ftp_session_new(int listen_fd)
     session->state = COMMAND_STATE;
     session->user_ok = false;
     session->pass_ok = false;
-    session->led = true;
+    set_session_led_from_config(session);
 
     /* link to the sessions list */
     if (sessions == NULL)
@@ -1413,90 +1411,6 @@ ftp_session_connect(ftp_session_t* session)
     }
 
     return 0;
-}
-
-static bool
-ftp_auth_oncommand(ftp_session_t* session, const char* command)
-{
-    if (command && (strcasecmp("USER", command) == 0 || strcasecmp("PASS", command) == 0 || strcasecmp("QUIT", command) == 0))
-    {
-        return true;
-    }
-
-    return session->user_ok && session->pass_ok;
-}
-
-static void
-ftp_auth_check(ftp_session_t* session, const char* user, const char* pass)
-{
-    char str_user[100];
-    ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), CONFIGPATH);
-    char str_pass[100];
-    ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), CONFIGPATH);
-    char str_anony[100];
-    ini_gets("Anonymous", "anonymous:", "dummy", str_anony, sizearray(str_anony), CONFIGPATH);
-    char str_led[100];
-    ini_gets("LED", "led:", "1", str_led, sizearray(str_led), CONFIGPATH);
-
-    session->led = (strcmp("1", str_led) == 0);
-
-    if (strcmp("1", str_anony) == 0)
-    {
-        session->user_ok = false;
-        session->pass_ok = false;
-        ftp_send_response(session, 230, "OK, Huh Anonymous is that you ???\r\n");
-        if (session->led)
-        {
-            flash_led_connect();
-        }
-        return;
-    }
-
-    if (user)
-    {
-        if (strcmp(str_user, user) == 0)
-        {
-            session->user_ok = true;
-        }
-        else
-        {
-            ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
-            ftp_send_response(session, 430, "Unknown user, Please check /config/sys-ftpd/config.ini\r\n");
-            ftp_session_close_cmd(session);
-            return;
-        }
-    }
-
-    if (pass)
-    {
-        if (strcmp(str_pass, pass) == 0)
-        {
-            session->pass_ok = true;
-        }
-        else
-        {
-            ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
-            ftp_send_response(session, 430, "Wrong password, Please check /config/sys-ftpd/config.ini\r\n");
-            ftp_session_close_cmd(session);
-            return;
-        }
-    }
-
-    ftp_session_set_state(session, COMMAND_STATE, 0);
-    if (ftp_auth_oncommand(session, NULL))
-    {
-        ftp_send_response(session, 230, "OK\r\n");
-        if (session->led)
-        {
-            flash_led_connect();
-        }
-        return;
-    }
-    else
-    {
-        ftp_send_response(session, 331, "next step required\r\n");
-        return;
-    }
 }
 
 /*! read command for ftp session
@@ -2952,6 +2866,11 @@ FTP_DECLARE(APPE)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
+
     /* open the file in append mode */
     ftp_xfer_file(session, args, XFER_FILE_APPE);
 }
@@ -2966,12 +2885,15 @@ FTP_DECLARE(APPE)
 FTP_DECLARE(CDUP)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* change to parent directory */
     cd_up(session);
-
     ftp_send_response(session, 200, "OK\r\n");
 }
 
@@ -2988,8 +2910,12 @@ FTP_DECLARE(CWD)
     int rc;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* .. is equivalent to CDUP */
     if (strcmp(args, "..") == 0)
@@ -3045,8 +2971,12 @@ FTP_DECLARE(DELE)
     int rc;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the file path */
     if (build_path(session, session->cwd, args) != 0)
@@ -3134,6 +3064,11 @@ FTP_DECLARE(LIST)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
+
     /* open the path in LIST mode */
     ftp_xfer_dir(session, args, XFER_DIR_LIST, true);
 }
@@ -3157,8 +3092,12 @@ FTP_DECLARE(MDTM)
     struct tm* tm;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the path */
     if (build_path(session, session->cwd, args) != 0)
@@ -3215,8 +3154,12 @@ FTP_DECLARE(MKD)
     int rc;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the path */
     if (build_path(session, session->cwd, args) != 0)
@@ -3250,6 +3193,11 @@ FTP_DECLARE(MLSD)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
+
     /* open the path in MLSD mode */
     ftp_xfer_dir(session, args, XFER_DIR_MLSD, true);
 }
@@ -3269,8 +3217,12 @@ FTP_DECLARE(MLST)
     size_t len;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the path */
     if (build_path(session, session->cwd, args) != 0)
@@ -3328,7 +3280,6 @@ FTP_DECLARE(MLST)
 FTP_DECLARE(MODE)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     /* we only accept S (stream) mode */
@@ -3353,6 +3304,11 @@ FTP_DECLARE(MODE)
 FTP_DECLARE(NLST)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* open the path in NLST mode */
     return ftp_xfer_dir(session, args, XFER_DIR_NLST, false);
@@ -3383,7 +3339,6 @@ FTP_DECLARE(NOOP)
 FTP_DECLARE(OPTS)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     /* we accept the following UTF8 options */
@@ -3461,19 +3416,6 @@ FTP_DECLARE(OPTS)
     ftp_send_response(session, 504, "invalid argument\r\n");
 }
 
-/*! @fn static void PASS(ftp_session_t *session, const char *args)
- *
- *  @brief provide password
- *
- *  @param[in] session ftp session
- *  @param[in] args    arguments
- */
-FTP_DECLARE(PASS)
-{
-    console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-    ftp_auth_check(session, NULL, args);
-}
-
 /*! @fn static void PASV(ftp_session_t *session, const char *args)
  *
  *  @brief request an address to connect to
@@ -3489,6 +3431,11 @@ FTP_DECLARE(PASV)
     in_port_t port;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     memset(buffer, 0, sizeof(buffer));
 
@@ -3601,6 +3548,11 @@ FTP_DECLARE(PORT)
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
+
     /* reset the state */
     ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
     session->flags &= ~(SESSION_PASV | SESSION_PORT);
@@ -3707,8 +3659,12 @@ FTP_DECLARE(PWD)
     char* path;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* encode the cwd */
     len = strlen(session->cwd);
@@ -3770,8 +3726,12 @@ FTP_DECLARE(REST)
     uint64_t pos = 0;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* make sure an argument is provided */
     if (args == NULL)
@@ -3824,6 +3784,11 @@ FTP_DECLARE(RETR)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
+
     /* open the file to retrieve */
     return ftp_xfer_file(session, args, XFER_FILE_RETR);
 }
@@ -3840,8 +3805,12 @@ FTP_DECLARE(RMD)
     int rc;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the path to remove */
     if (build_path(session, session->cwd, args) != 0)
@@ -3878,8 +3847,12 @@ FTP_DECLARE(RNFR)
     int rc;
     struct stat st;
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the path to rename from */
     if (build_path(session, session->cwd, args) != 0)
@@ -3918,8 +3891,12 @@ FTP_DECLARE(RNTO)
     int rc;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* make sure the previous command was RNFR */
     if (!(session->flags & SESSION_RENAME))
@@ -3968,8 +3945,12 @@ FTP_DECLARE(SIZE)
     struct stat st;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     /* build the path to stat */
     if (build_path(session, session->cwd, args) != 0)
@@ -4010,6 +3991,11 @@ FTP_DECLARE(STAT)
     int seconds = uptime % 60;
 
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
+
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
 
     if (session->state == DATA_CONNECT_STATE)
     {
@@ -4056,6 +4042,11 @@ FTP_DECLARE(STOR)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
 
+    if (!check_authentication_state(session))
+    {
+        return;
+    }
+
     /* open the file to store */
     return ftp_xfer_file(session, args, XFER_FILE_STOR);
 }
@@ -4073,7 +4064,6 @@ FTP_DECLARE(STOU)
 
     /* we do not support this yet */
     ftp_session_set_state(session, COMMAND_STATE, 0);
-
     ftp_send_response(session, 502, "unavailable\r\n");
 }
 
@@ -4087,7 +4077,6 @@ FTP_DECLARE(STOU)
 FTP_DECLARE(STRU)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     /* we only support F (no structure) mode */
@@ -4110,7 +4099,6 @@ FTP_DECLARE(STRU)
 FTP_DECLARE(SYST)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     /* we are UNIX compliant with 8-bit characters */
@@ -4129,7 +4117,6 @@ FTP_DECLARE(SYST)
 FTP_DECLARE(TYPE)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-
     ftp_session_set_state(session, COMMAND_STATE, 0);
 
     /* we always transfer in binary mode */
@@ -4141,10 +4128,101 @@ FTP_DECLARE(TYPE)
  *  @brief provide user name
  *
  *  @param[in] session ftp session
- *  @param[in] args    arguments
+ *  @param[in] args    username
  */
 FTP_DECLARE(USER)
 {
     console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
-    ftp_auth_check(session, args, NULL);
+    char str_anony[2];
+    ini_gets("Anonymous", "anonymous:", "0", str_anony, sizearray(str_anony), CONFIGPATH);
+    if (*str_anony == '1')
+    {
+        ftp_send_response(session, 230, "OK\r\n");
+        if (session->led)
+        {
+            flash_led_connect();
+        }
+        return;
+    }
+
+    // reset authentication state
+    session->user_ok = false;
+    session->pass_ok = false;
+    char str_user[64];
+    ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), CONFIGPATH);
+    if (strcmp(str_user, args) == 0)
+    {
+        // username is ok, wait for the password
+        session->user_ok = true;
+    }
+    ftp_send_response(session, 331, "Password required\r\n");
+}
+
+/*! @fn static void PASS(ftp_session_t *session, const char *args)
+ *
+ *  @brief provide password
+ *
+ *  @param[in] session ftp session
+ *  @param[in] args    arguments
+ */
+FTP_DECLARE(PASS)
+{
+    console_print(CYAN "%s %s\n" RESET, __func__, args ? args : "");
+    char str_anony[2];
+    ini_gets("Anonymous", "anonymous:", "0", str_anony, sizearray(str_anony), CONFIGPATH);
+    if (*str_anony == '1')
+    {
+        ftp_send_response(session, 230, "OK\r\n");
+        if (session->led)
+        {
+            flash_led_connect();
+        }
+        return;
+    }
+
+    // reset authentication state
+    session->pass_ok = false;
+    char str_pass[64];
+    ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), CONFIGPATH);
+    if (strcmp(str_pass, args) == 0)
+    {
+        // password is ok
+        session->pass_ok = true;
+    }
+
+    // check username and password state
+    if (check_authentication_state(session))
+    {
+        ftp_session_set_state(session, COMMAND_STATE, 0);
+        ftp_send_response(session, 230, "OK\r\n");
+        if (session->led)
+        {
+            flash_led_connect();
+        }
+    }
+}
+
+/*! load the led setting from the ini file and set state in session */
+void set_session_led_from_config(ftp_session_t* session)
+{
+    char str_led[2];
+    ini_gets("LED", "led:", "1", str_led, sizearray(str_led), CONFIGPATH);
+    session->led = *str_led == '1';
+}
+
+/*! check the session authentication and send out an error if not completely authenticated.
+ *
+ * @return 1 if authentication is ok, 0 if not
+ */
+int check_authentication_state(ftp_session_t* session)
+{
+    if (!session->user_ok || !session->pass_ok)
+    {
+        console_print(RED "command denied, not authenticated\n" RESET);
+        ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
+        ftp_send_response(session, 430, "Unknown user or password, please check /config/sys-ftpd/config.ini\r\n");
+        ftp_session_close_cmd(session);
+        return 0;
+    }
+    return 1;
 }

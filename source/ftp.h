@@ -10,8 +10,12 @@ typedef enum
     LOOP_EXIT,     /*!< Terminate looping */
 } loop_status_t;
 
+typedef struct ftp_session_t ftp_session_t;
+
 void ftp_pre_init(void);
 int ftp_init(void);
 loop_status_t ftp_loop(void);
 void ftp_exit(void);
 void ftp_post_exit(void);
+int check_authentication_state(ftp_session_t *session);
+void set_session_led_from_config(ftp_session_t* session);
