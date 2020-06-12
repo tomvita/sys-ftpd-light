@@ -17,5 +17,3 @@ int ftp_init(void);
 loop_status_t ftp_loop(void);
 void ftp_exit(void);
 void ftp_post_exit(void);
-int check_authentication_state(ftp_session_t *session);
-void set_session_led_from_config(ftp_session_t* session);
