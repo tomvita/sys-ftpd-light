@@ -249,6 +249,7 @@ static const size_t num_ftp_commands = sizeof(ftp_commands) / sizeof(ftp_command
 static void update_free_space(void);
 static bool get_session_led_setting();
 static bool is_session_authenticated(ftp_session_t* session);
+static void user_pass_not_set(ftp_session_t* session);
 
 /*! compare ftp command descriptors
  *
@@ -4110,6 +4111,11 @@ FTP_DECLARE(USER)
     session->pass_ok = false;
     char str_user[64];
     ini_gets("User", "user:", "dummy", str_user, sizearray(str_user), CONFIGPATH);
+    if (*str_user == '\0')
+    {
+        user_pass_not_set(session);
+        return;
+    }
     if (strcmp(str_user, args) == 0)
     {
         // username is ok, wait for the password
@@ -4144,6 +4150,11 @@ FTP_DECLARE(PASS)
     session->pass_ok = false;
     char str_pass[64];
     ini_gets("Password", "password:", "dummy", str_pass, sizearray(str_pass), CONFIGPATH);
+    if (*str_pass == '\0')
+    {
+        user_pass_not_set(session);
+        return;
+    }
     if (strcmp(str_pass, args) == 0)
     {
         // password is ok
@@ -4185,4 +4196,11 @@ bool is_session_authenticated(ftp_session_t* session)
     ftp_send_response(session, 430, "Unknown user or password, please check /config/sys-ftpd/config.ini\r\n");
     ftp_session_close_cmd(session);
     return false;
+}
+
+void user_pass_not_set(ftp_session_t* session)
+{
+    ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
+    ftp_send_response(session, 430, "User or password are not set. They must be set in /config/sys-ftpd/config.ini\r\n");
+    ftp_session_close_cmd(session);
 }
