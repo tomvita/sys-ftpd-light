@@ -2368,10 +2368,47 @@ list_transfer(ftp_session_t* session)
 
             if (rc != 0)
             {
+#ifndef __SWITCH__
                 /* an error occurred */
                 ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
                 ftp_send_response(session, 550, "unavailable\r\n");
                 return LOOP_EXIT;
+#else
+                // probably archive bit set; list name with dummy stats
+                memset(&st, 0, sizeof(st));
+                console_print(RED "%s: type %u\n" RESET, dent->d_name, dent->d_type);
+                switch (dent->d_type)
+                {
+                case DT_BLK:
+                    st.st_mode = S_IFBLK;
+                    break;
+
+                case DT_CHR:
+                    st.st_mode = S_IFCHR;
+                    break;
+
+                case DT_DIR:
+                    st.st_mode = S_IFDIR;
+                    break;
+
+                case DT_FIFO:
+                    st.st_mode = S_IFIFO;
+                    break;
+
+                case DT_LNK:
+                    st.st_mode = S_IFLNK;
+                    break;
+
+                case DT_REG:
+                case DT_UNKNOWN:
+                    st.st_mode = S_IFREG;
+                    break;
+
+                case DT_SOCK:
+                    st.st_mode = S_IFSOCK;
+                    break;
+                }
+#endif
             }
 #endif
             /* encode \n in path */
