@@ -14,6 +14,7 @@ static bool paused = false;
 static Mutex pausedMutex = 0;
 static Thread pauseThread;
 static HidNpadButton comboKeys[8] = {0};
+static HidNpadButton rebootKeys[8] = {0};
 static PadState pad = {0};
 
 bool isHidHandheld()
@@ -37,8 +38,13 @@ void inputPoller()
         for (u8 i = 0; i != sizearray(comboKeys); ++i)
             keyCombo |= comboKeys[i];
 
+        u64 rebootCombo = 0;
+        for (u8 i = 0; i != sizearray(rebootKeys); ++i)
+            rebootCombo |= rebootKeys[i];
+
         static bool keyComboPressed = false;
 
+        if ((kHeld & rebootCombo) == rebootCombo) fatalThrow(0x12377);
         if ((kHeld & keyCombo) == keyCombo)
         {
             if (!keyComboPressed)
@@ -106,6 +112,14 @@ Result pauseInit()
         while (token != NULL && i != sizearray(comboKeys))
         {
             comboKeys[i++] = GetKey(token);
+            token = strtok(NULL, "+ ");
+        };
+        ini_gets("Reboot", "keycombo:", "PLUS+MINUS+Y", buffer, 128, CONFIGPATH);
+        token = strtok(buffer, "+ ");
+        i = 0;
+        while (token != NULL && i != sizearray(rebootKeys))
+        {
+            rebootKeys[i++] = GetKey(token);
             token = strtok(NULL, "+ ");
         };
     }
