@@ -8,7 +8,7 @@ Hotkeys: To help with security while there is are no login credentials, debuggin
 
 ---
 
-Config Example (Located on your sd in `sdmc:/config/sys-ftpd/config.ini`):
+Config Example (Located on your sd in `sdmc:/config/sys-ftpd-10k/config.ini`):
 
 ```
 [User]
