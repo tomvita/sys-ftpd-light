@@ -520,7 +520,7 @@ ftp_session_open_file_read(ftp_session_t* session)
     struct stat st;
 
     /* open file in read mode */
-    if (!strcmp("/config/sys-ftpd/logs/ftpd.log", session->buffer))
+    if (!strcmp("/config/sys-ftpd-10k/logs/ftpd.log", session->buffer))
     {
         console_print(RED "Tried to open ftpd.log for reading. That's not allowed!\n");
         return -1;
@@ -604,7 +604,7 @@ ftp_session_open_file_write(ftp_session_t* session,
     int rc;
     const char* mode = "wb";
 
-    if (!strcmp("/config/sys-ftpd/logs/ftpd.log", session->buffer))
+    if (!strcmp("/config/sys-ftpd-10k/logs/ftpd.log", session->buffer))
     {
         console_print(RED "Tried to open ftpd.log for writing. That's not allowed!");
         return -1;
@@ -2368,10 +2368,47 @@ list_transfer(ftp_session_t* session)
 
             if (rc != 0)
             {
+#ifndef __SWITCH__
                 /* an error occurred */
                 ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
                 ftp_send_response(session, 550, "unavailable\r\n");
                 return LOOP_EXIT;
+#else
+                // probably archive bit set; list name with dummy stats
+                memset(&st, 0, sizeof(st));
+                console_print(RED "%s: type %u\n" RESET, dent->d_name, dent->d_type);
+                switch (dent->d_type)
+                {
+                case DT_BLK:
+                    st.st_mode = S_IFBLK;
+                    break;
+
+                case DT_CHR:
+                    st.st_mode = S_IFCHR;
+                    break;
+
+                case DT_DIR:
+                    st.st_mode = S_IFDIR;
+                    break;
+
+                case DT_FIFO:
+                    st.st_mode = S_IFIFO;
+                    break;
+
+                case DT_LNK:
+                    st.st_mode = S_IFLNK;
+                    break;
+
+                case DT_REG:
+                case DT_UNKNOWN:
+                    st.st_mode = S_IFREG;
+                    break;
+
+                case DT_SOCK:
+                    st.st_mode = S_IFSOCK;
+                    break;
+                }
+#endif
             }
 #endif
             /* encode \n in path */
@@ -4193,7 +4230,7 @@ bool is_session_authenticated(ftp_session_t* session)
 
     console_print(RED "command denied, not authenticated\n" RESET);
     ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
-    ftp_send_response(session, 430, "Unknown user or password, please check /config/sys-ftpd/config.ini\r\n");
+    ftp_send_response(session, 430, "Unknown user or password, please check /config/sys-ftpd-10k/config.ini\r\n");
     ftp_session_close_cmd(session);
     return false;
 }
@@ -4201,6 +4238,6 @@ bool is_session_authenticated(ftp_session_t* session)
 void user_pass_not_set(ftp_session_t* session)
 {
     ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
-    ftp_send_response(session, 430, "User or password are not set. They must be set in /config/sys-ftpd/config.ini\r\n");
+    ftp_send_response(session, 430, "User or password are not set. They must be set in /config/sys-ftpd-10k/config.ini\r\n");
     ftp_session_close_cmd(session);
 }

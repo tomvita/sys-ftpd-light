@@ -1,8 +1,10 @@
 {
 	"name":	"sys-ftpd",
-	"title_id":	"0x420000000000000E",
-	"title_id_range_min":	"0x420000000000000E",
-	"title_id_range_max":	"0x420000000000000E",
+	"version":	"1.0.5b",
+	"program_id":	"0x420000000000000F",
+	"program_id_range_min":	"0x420000000000000F",
+	"program_id_range_max":	"0x420000000000000F",
+
 	"main_thread_stack_size":	"0x00004000",
 	"main_thread_priority":	49,
 	"default_cpu_id":	3,
@@ -10,7 +12,13 @@
 	"is_retail":	true,
 	"pool_partition":	2,
 	"is_64_bit":	true,
+	"signature_key_generation":	0,
 	"address_space_type":	3,
+	"optimize_memory_allocation":	false,
+	"disable_device_address_space_merge":	true,
+	"enable_alias_region_extra_size":	false,
+	"prevent_code_reads":	false,
+	"system_resource_size":	"0",
 	"filesystem_access":	{
 		"permissions":	"0xffffffffffffffff"
 	},
@@ -166,7 +174,8 @@
 			"type":	"debug_flags",
 			"value":	{
 				"allow_debug":	false,
-				"force_debug":	true
+				"force_debug":	true,
+				"force_debug_prod":	false
 			}
 		}]
 }

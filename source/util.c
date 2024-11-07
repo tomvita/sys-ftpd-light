@@ -97,7 +97,7 @@ Result pauseInit()
     Result rc;
     mutexLock(&pausedMutex);
 
-    FILE* should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "r");
+    FILE* should_pause_file = fopen("/config/sys-ftpd-10k/ftpd_paused", "r");
     if (should_pause_file != NULL)
     {
         paused = true;
@@ -126,7 +126,7 @@ Result pauseInit()
 
     inputThreadRunning = true;
 
-    rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x300, 0x3B, -2);
+    rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x1000, 0x3B, -2);
     if (R_FAILED(rc))
         goto exit;
 
@@ -160,13 +160,13 @@ void setPaused(bool newPaused)
     paused = newPaused;
     if (paused)
     {
-        FILE* should_pause_file = fopen("/config/sys-ftpd/ftpd_paused", "w");
+        FILE* should_pause_file = fopen("/config/sys-ftpd-10k/ftpd_paused", "w");
         fclose(should_pause_file);
         flash_led_pause();
     }
     else
     {
-        unlink("/config/sys-ftpd/ftpd_paused");
+        unlink("/config/sys-ftpd-10k/ftpd_paused");
         flash_led_unpause();
     }
     mutexUnlock(&pausedMutex);
