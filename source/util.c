@@ -126,7 +126,7 @@ Result pauseInit()
 
     inputThreadRunning = true;
 
-    rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x300, 0x3B, -2);
+    rc = threadCreate(&pauseThread, inputPoller, NULL, NULL, 0x1000, 0x3B, -2);
     if (R_FAILED(rc))
         goto exit;
 

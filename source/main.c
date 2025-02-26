@@ -55,8 +55,6 @@ void __appInit(void)
     setsysExit();
 
     static const SocketInitConfig socketInitConfig = {
-        .bsdsockets_version = 1,
-
         .tcp_tx_buf_size = 0x800,
         .tcp_rx_buf_size = 0x800,
         .tcp_tx_buf_max_size = 0x25000,
