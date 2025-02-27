@@ -18,6 +18,7 @@
 #include "util.h"
 
 #include "minIni.h"
+#include "dmntcht.h"
 
 #define HEAP_SIZE 0xA7000
 
@@ -67,6 +68,7 @@ void __appInit(void)
         .sb_efficiency = 1,
     };
     R_ASSERT(socketInitialize(&socketInitConfig));
+    dmntchtInitialize();
     smExit();
 }
 
@@ -78,6 +80,7 @@ void __appExit(void)
     timeExit();
     fsdevUnmountAll();
     fsExit();
+    dmntchtExit();
 }
 
 static loop_status_t loop(loop_status_t (*callback)(void))

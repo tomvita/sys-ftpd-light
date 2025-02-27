@@ -1,9 +1,9 @@
 {
-	"name":	"sys-ftpd",
+	"name":	"sys-ftpd-freeze",
 	"version":	"1.0.5",
-	"program_id":	"0x420000000000000E",
-	"program_id_range_min":	"0x420000000000000E",
-	"program_id_range_max":	"0x420000000000000E",
+	"program_id":	"0x420000000000000D",
+	"program_id_range_min":	"0x420000000000000D",
+	"program_id_range_max":	"0x420000000000000D",
 	"main_thread_stack_size":	"0x00004000",
 	"main_thread_priority":	49,
 	"default_cpu_id":	3,
@@ -173,8 +173,8 @@
 			"type":	"debug_flags",
 			"value":	{
 				"allow_debug":	false,
-				"force_debug":	true,
-				"force_debug_prod":	false
+				"force_debug":	false,
+				"force_debug_prod":	true
 			}
 		}]
 }

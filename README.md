@@ -25,11 +25,11 @@ Since it's lightweight, it occupies less memory on your console at the cost of t
 
 Hotkeys: To help with security while there is are no login credentials, debugging, or otherwise, you can pause/resume running the server using the PLUS+MINUS+X button combination.
 
-Sysmodule program ID: **420000000000000E**
+Sysmodule program ID: **420000000000000D**
 
 ---
 
-Config Example (Located on your sd in `sdmc:/config/sys-ftpd/config.ini`):
+Config Example (Located on your sd in `sdmc:/config/sys-ftpd-10k/config.ini`):
 
 ```
 [User]

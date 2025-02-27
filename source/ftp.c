@@ -4230,7 +4230,7 @@ bool is_session_authenticated(ftp_session_t* session)
 
     console_print(RED "command denied, not authenticated\n" RESET);
     ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
-    ftp_send_response(session, 430, "Unknown user or password, please check /config/sys-ftpd/config.ini\r\n");
+    ftp_send_response(session, 430, "Unknown user or password, please check /config/sys-ftpd-10k/config.ini\r\n");
     ftp_session_close_cmd(session);
     return false;
 }
@@ -4238,6 +4238,6 @@ bool is_session_authenticated(ftp_session_t* session)
 void user_pass_not_set(ftp_session_t* session)
 {
     ftp_session_set_state(session, COMMAND_STATE, CLOSE_PASV | CLOSE_DATA);
-    ftp_send_response(session, 430, "User or password are not set. They must be set in /config/sys-ftpd/config.ini\r\n");
+    ftp_send_response(session, 430, "User or password are not set. They must be set in /config/sys-ftpd-10k/config.ini\r\n");
     ftp_session_close_cmd(session);
 }

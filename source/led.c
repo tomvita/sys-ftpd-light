@@ -3,7 +3,8 @@
 #include <switch.h>
 
 #include "util.h"
-
+#include "dmntcht.h"
+static bool dmntcht = false;
 // Breathing effect LED pattern
 static const HidsysNotificationLedPattern breathing_pattern = {
     .baseMiniCycleDuration = 0x8, // 100ms.
@@ -93,9 +94,11 @@ void flash_led_disconnect()
 void flash_led_pause()
 {
     send_led_pattern(&double_click_pattern);
+    dmntchtPauseCheatProcess();
 }
 
 void flash_led_unpause()
 {
     send_led_pattern(&single_click_pattern);
+    dmntchtResumeCheatProcess();
 }
