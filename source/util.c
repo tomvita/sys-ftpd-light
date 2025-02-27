@@ -8,11 +8,12 @@
 
 #include "minIni.h"
 #include <switch.h>
+#include "dmntcht.h"
 
 static bool inputThreadRunning = true;
 static bool paused = false;
 static Mutex pausedMutex = 0;
-static Thread pauseThread;
+static Thread pauseThread, homeButtonDetectorThread;
 static HidNpadButton comboKeys[8] = {0};
 static PadState pad = {0};
 
@@ -53,6 +54,21 @@ void inputPoller()
         }
         svcSleepThread(1e+8);
     } while (inputThreadRunning);
+}
+
+void homeButtonDetector() {
+    // To freeze the game when the home button is pressed
+    Event homeButtonPressEvent = { 0 };
+    hidsysAcquireHomeButtonEventHandle(&homeButtonPressEvent, false);
+
+    while (inputThreadRunning) {
+        if (R_SUCCEEDED(eventWait(&homeButtonPressEvent, 100000000))) {
+            eventClear(&homeButtonPressEvent);
+            // setPaused(true);
+            dmntchtPauseCheatProcess();
+        }
+    }
+
 }
 
 const char* buttons[] = {
@@ -117,6 +133,14 @@ Result pauseInit()
         goto exit;
 
     rc = threadStart(&pauseThread);
+    if (R_FAILED(rc))
+        goto exit;
+
+    rc = threadCreate(&homeButtonDetectorThread, homeButtonDetector, NULL, NULL, 0x1000, 0x2C, -2);
+    if (R_FAILED(rc))
+        goto exit;
+
+    rc = threadStart(&homeButtonDetectorThread);
     if (R_FAILED(rc))
         goto exit;
 
